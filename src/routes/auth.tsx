@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>) => ({ modo: s.modo === "registro" ? "registro" : s.modo === "recuperar" ? "recuperar" : undefined }) as { modo?: "registro" | "recuperar" },
+  validateSearch: (s: Record<string, unknown>) => ({ modo: s["modo"] === "registro" ? "registro" : s["modo"] === "recuperar" ? "recuperar" : undefined }) as { modo?: "registro" | "recuperar" },
   head: () => ({
     meta: [
       { title: "Ingresar — Teje conmigo" },
@@ -42,7 +42,7 @@ function AuthPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const em = emailS.safeParse(email);
-    if (!em.success) return void toast.error(em.error.issues[0].message);
+    if (!em.success) return void toast.error(em.error.issues[0]?.message ?? "Datos inválidos");
     setBusy(true);
     try {
       if (mode === "recuperar") {
@@ -52,7 +52,7 @@ function AuthPage() {
         return;
       }
       const pw = passS.safeParse(password);
-      if (!pw.success) return void toast.error(pw.error.issues[0].message);
+      if (!pw.success) return void toast.error(pw.error.issues[0]?.message ?? "Datos inválidos");
       if (mode === "registro") {
         const { error } = await supabase.auth.signUp({
           email: em.data, password: pw.data,

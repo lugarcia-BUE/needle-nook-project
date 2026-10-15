@@ -49,7 +49,7 @@ export function ProjectForm({ project, trigger }: { project?: Project; trigger: 
   async function save(e: React.FormEvent) {
     e.preventDefault();
     const v = schema.safeParse(f);
-    if (!v.success) return void toast.error(v.error.issues[0].message);
+    if (!v.success) return void toast.error(v.error.issues[0]?.message ?? "Datos inválidos");
     if (f.start_date && f.target_end_date && f.target_end_date < f.start_date) return void toast.error("La fecha estimada de finalización no puede ser anterior al inicio.");
     if (file && !file.type.startsWith("image/")) return void toast.error("La fotografía debe ser una imagen.");
     setBusy(true);

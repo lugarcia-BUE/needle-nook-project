@@ -15,7 +15,7 @@ export function useTick(active: boolean) {
 }
 
 export function ActiveSessionBar() {
-  const { data: s } = useActiveSession();
+  const { data } = useActiveSession(); const s = data as import("@/lib/data").Session | null | undefined;
   const timer = useTimer();
   useTick(!!s && !s.paused_at);
   if (!s) return null;

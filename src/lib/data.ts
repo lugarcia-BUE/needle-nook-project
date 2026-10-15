@@ -110,7 +110,7 @@ export function useCounterChange() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (v: { id: string; action: "sumar" | "restar" | "editar" | "deshacer"; value?: number }) =>
-      unwrap(await supabase.rpc("counter_change", { _counter_id: v.id, _action: v.action, _value: v.value })),
+      unwrap(await supabase.rpc("counter_change", { _counter_id: v.id, _action: v.action, ...(v.value !== undefined ? { _value: v.value } : {}) })),
     onMutate: async (v) => {
       // Actualización optimista para que el botón responda al instante.
       if (v.action !== "sumar" && v.action !== "restar") return;

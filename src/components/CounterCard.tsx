@@ -16,7 +16,7 @@ import { qk, useCounterChange, type Counter, type Section } from "@/lib/data";
 
 const ACTION: Record<string, string> = { sumar: "+1", restar: "−1", editar: "Edición manual", deshacer: "Deshacer" };
 
-export function CounterCard({ c, subtitle, sections }: { c: Counter; subtitle?: string; sections?: Section[] }) {
+export function CounterCard({ c, subtitle, sections }: { c: Counter; subtitle?: string | undefined; sections?: Section[] | undefined }) {
   const change = useCounterChange();
   const pct = counterProgress(c.current_value, c.target_value);
   return (
@@ -74,7 +74,7 @@ function ManualEdit({ c }: { c: Counter }) {
         <form onSubmit={(e) => {
           e.preventDefault();
           const n = Number(v);
-          if (!Number.isInteger(n) || n < 0) return toast.error("Ingresá un número entero mayor o igual a cero.");
+          if (!Number.isInteger(n) || n < 0) return void toast.error("Ingresá un número entero mayor o igual a cero.");
           change.mutate({ id: c.id, action: "editar", value: n }, { onSuccess: () => { setOpen(false); toast.success("Valor actualizado (queda en el historial)"); } });
         }} className="space-y-4">
           <Input type="number" min={0} step={1} inputMode="numeric" className="h-14 text-2xl" value={v} onChange={(e) => setV(e.target.value)} />
@@ -136,7 +136,7 @@ function DeleteCounter({ c }: { c: Counter }) {
 const optInt = (s: string) => (s.trim() === "" ? null : Number(s));
 
 export function CounterForm({ counter, projectId, sections, trigger, projects }: {
-  counter?: Counter; projectId?: string; sections?: Section[]; trigger: React.ReactNode; projects?: { id: string; name: string }[];
+  counter?: Counter; projectId?: string; sections?: Section[] | undefined; trigger: React.ReactNode; projects?: { id: string; name: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const qc = useQueryClient();
@@ -148,11 +148,11 @@ export function CounterForm({ counter, projectId, sections, trigger, projects }:
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!f.name.trim()) return toast.error("Poné un nombre al contador.");
-    if (!f.project_id) return toast.error("Elegí un proyecto.");
+    if (!f.name.trim()) return void toast.error("Poné un nombre al contador.");
+    if (!f.project_id) return void toast.error("Elegí un proyecto.");
     const nums = { target_value: optInt(f.target_value), stitches_per_row: optInt(f.stitches_per_row), motif_repeats: optInt(f.motif_repeats) };
     for (const [k, n] of Object.entries(nums)) {
-      if (n !== null && (!Number.isInteger(n) || n < 0 || (k === "target_value" && n === 0))) return toast.error("Los números deben ser enteros positivos.");
+      if (n !== null && (!Number.isInteger(n) || n < 0 || (k === "target_value" && n === 0))) return void toast.error("Los números deben ser enteros positivos.");
     }
     const row = { name: f.name.trim().slice(0, 100), project_id: f.project_id, section_id: f.section_id || null, notes: f.notes.slice(0, 2000) || null, ...nums };
     try {

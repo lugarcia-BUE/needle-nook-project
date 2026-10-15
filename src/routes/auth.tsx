@@ -42,7 +42,7 @@ function AuthPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const em = emailS.safeParse(email);
-    if (!em.success) return toast.error(em.error.issues[0].message);
+    if (!em.success) return void toast.error(em.error.issues[0].message);
     setBusy(true);
     try {
       if (mode === "recuperar") {
@@ -52,7 +52,7 @@ function AuthPage() {
         return;
       }
       const pw = passS.safeParse(password);
-      if (!pw.success) return toast.error(pw.error.issues[0].message);
+      if (!pw.success) return void toast.error(pw.error.issues[0].message);
       if (mode === "registro") {
         const { error } = await supabase.auth.signUp({
           email: em.data, password: pw.data,
@@ -74,7 +74,7 @@ function AuthPage() {
 
   async function social(p: "google" | "lovable") {
     const r = await lovable.auth.signInWithOAuth(p, { redirect_uri: window.location.origin + "/auth" });
-    if (r.error) return toast.error("No se pudo iniciar sesión.");
+    if (r.error) return void toast.error("No se pudo iniciar sesión.");
     if (r.redirected) return;
     navigate({ to: "/inicio", replace: true });
   }

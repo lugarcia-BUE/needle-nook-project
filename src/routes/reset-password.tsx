@@ -25,12 +25,12 @@ function Reset() {
   const navigate = useNavigate();
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (pw.length < 8) return toast.error("La contraseña debe tener al menos 8 caracteres.");
-    if (pw !== pw2) return toast.error("Las contraseñas no coinciden.");
+    if (pw.length < 8) return void toast.error("La contraseña debe tener al menos 8 caracteres.");
+    if (pw !== pw2) return void toast.error("Las contraseñas no coinciden.");
     setBusy(true);
     const { error } = await supabase.auth.updateUser({ password: pw });
     setBusy(false);
-    if (error) return toast.error("No se pudo cambiar. Pedí un nuevo enlace desde “Olvidé mi contraseña”.");
+    if (error) return void toast.error("No se pudo cambiar. Pedí un nuevo enlace desde “Olvidé mi contraseña”.");
     toast.success("Contraseña actualizada");
     navigate({ to: "/inicio", replace: true });
   }

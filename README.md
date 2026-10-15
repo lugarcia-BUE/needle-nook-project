@@ -31,6 +31,7 @@ No solicitar ubicación precisa. La ubicación geográfica debe ser voluntaria.
 ## 3. Panel de inicio
 
 Mostrar:
+
 - Proyectos activos.
 - Últimos proyectos modificados.
 - Vueltas registradas recientemente.
@@ -45,6 +46,7 @@ Cada proyecto debe mostrar su fotografía, nombre, estado y porcentaje de avance
 Permitir crear, consultar, editar, pausar, reanudar, finalizar y archivar proyectos.
 
 Cada proyecto tendrá:
+
 - Nombre y descripción.
 - Técnica: crochet, dos agujas u otra.
 - Tipo de prenda u objeto.
@@ -67,6 +69,7 @@ Permitir crear secciones como espalda, delantero, mangas, cuello, puños y termi
 Crear contadores independientes por proyecto y por sección.
 
 Cada contador debe registrar:
+
 - Vueltas o filas actuales.
 - Objetivo de vueltas o filas, opcional.
 - Número de puntos por fila, opcional.
@@ -91,6 +94,7 @@ Crear una calculadora con dos herramientas.
 **A. Regla de tres simple**
 
 Permitir ingresar:
+
 - Valor de referencia.
 - Medida correspondiente.
 - Nueva medida deseada.
@@ -108,6 +112,7 @@ Validar que la medida de referencia no sea cero y que los datos sean numéricos 
 Permitir registrar puntos y filas obtenidos en una muestra de 10 × 10 cm.
 
 Calcular:
+
 - Puntos por centímetro.
 - Filas por centímetro.
 - Puntos estimados para un ancho deseado.
@@ -140,6 +145,7 @@ Para los hilados, registrar marca, nombre, composición, grosor, color, código 
 Para las agujas, registrar tipo, diámetro en milímetros y largo, cuando corresponda.
 
 Permitir asociar materiales a proyectos y registrar:
+
 - Cantidad estimada necesaria.
 - Cantidad disponible.
 - Cantidad comprada.

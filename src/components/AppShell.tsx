@@ -1,7 +1,19 @@
 import { Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { BookOpen, Calculator, FolderHeart, Hash, Home, LogOut, Menu, Package, ShoppingBasket, User, Users } from "lucide-react";
+import {
+  BookOpen,
+  Calculator,
+  FolderHeart,
+  Hash,
+  Home,
+  LogOut,
+  Menu,
+  Package,
+  ShoppingBasket,
+  User,
+  Users,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -27,7 +39,10 @@ function NavLinks({ onClick }: { onClick?: () => void }) {
           to={n.to}
           onClick={onClick}
           className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-sidebar-foreground hover:bg-sidebar-accent"
-          activeProps={{ className: "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary" }}
+          activeProps={{
+            className:
+              "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary",
+          }}
         >
           <n.icon className="h-5 w-5" /> {n.label}
         </Link>
@@ -48,10 +63,18 @@ export function AppShell() {
   }
   const footer = (
     <div className="mt-auto flex flex-col gap-1 border-t pt-3">
-      <Link to="/perfil" onClick={() => setOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-sidebar-accent" activeProps={{ className: "bg-sidebar-accent" }}>
+      <Link
+        to="/perfil"
+        onClick={() => setOpen(false)}
+        className="flex items-center gap-3 rounded-xl px-4 py-3 hover:bg-sidebar-accent"
+        activeProps={{ className: "bg-sidebar-accent" }}
+      >
         <User className="h-5 w-5" /> Mi perfil
       </Link>
-      <button onClick={signOut} className="flex items-center gap-3 rounded-xl px-4 py-3 text-left hover:bg-sidebar-accent">
+      <button
+        onClick={signOut}
+        className="flex items-center gap-3 rounded-xl px-4 py-3 text-left hover:bg-sidebar-accent"
+      >
         <LogOut className="h-5 w-5" /> Cerrar sesión
       </button>
     </div>
@@ -59,19 +82,27 @@ export function AppShell() {
   return (
     <div className="min-h-screen lg:flex">
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r bg-sidebar p-4 lg:flex">
-        <Link to="/inicio" className="mb-6 px-3 font-display text-2xl font-semibold text-primary">Teje conmigo</Link>
+        <Link to="/inicio" className="mb-6 px-3 font-display text-2xl font-semibold text-primary">
+          Teje conmigo
+        </Link>
         <NavLinks />
         {footer}
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/90 px-4 py-3 backdrop-blur lg:hidden">
-          <Link to="/inicio" className="font-display text-xl font-semibold text-primary">Teje conmigo</Link>
+          <Link to="/inicio" className="font-display text-xl font-semibold text-primary">
+            Teje conmigo
+          </Link>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Abrir menú"><Menu className="h-6 w-6" /></Button>
+              <Button variant="ghost" size="icon" aria-label="Abrir menú">
+                <Menu className="h-6 w-6" />
+              </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex w-72 flex-col bg-sidebar p-4">
-              <SheetTitle className="mb-4 px-3 font-display text-2xl text-primary">Teje conmigo</SheetTitle>
+              <SheetTitle className="mb-4 px-3 font-display text-2xl text-primary">
+                Teje conmigo
+              </SheetTitle>
               <NavLinks onClick={() => setOpen(false)} />
               {footer}
             </SheetContent>

@@ -134,7 +134,10 @@
     font-family: var(--font-sans);
     font-size: 1.0625rem;
   }
-  h1, h2, h3, .font-display {
+  h1,
+  h2,
+  h3,
+  .font-display {
     font-family: var(--font-display);
     letter-spacing: -0.01em;
   }

@@ -19,7 +19,15 @@ export const EXPERIENCE = [
   { value: "intermedio", label: "Tengo experiencia" },
   { value: "avanzado", label: "Tejo hace mucho" },
 ];
-export const SECTION_PRESETS = ["Espalda", "Delantero", "Manga izquierda", "Manga derecha", "Cuello", "Puños", "Terminaciones"];
+export const SECTION_PRESETS = [
+  "Espalda",
+  "Delantero",
+  "Manga izquierda",
+  "Manga derecha",
+  "Cuello",
+  "Puños",
+  "Terminaciones",
+];
 
 export const label = (list: { value: string; label: string }[], v?: string | null) =>
   list.find((x) => x.value === v)?.label ?? (v || "—");

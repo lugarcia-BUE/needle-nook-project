@@ -10,7 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>) => ({ modo: s["modo"] === "registro" ? "registro" : s["modo"] === "recuperar" ? "recuperar" : undefined }) as { modo?: "registro" | "recuperar" },
+  validateSearch: (s: Record<string, unknown>) =>
+    ({
+      modo:
+        s["modo"] === "registro" ? "registro" : s["modo"] === "recuperar" ? "recuperar" : undefined,
+    }) as { modo?: "registro" | "recuperar" },
   head: () => ({
     meta: [
       { title: "Ingresar — Teje conmigo" },
@@ -36,7 +40,9 @@ function AuthPage() {
   const [sent, setSent] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => { if (data.user) navigate({ to: "/inicio", replace: true }); });
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) navigate({ to: "/inicio", replace: true });
+    });
   }, [navigate]);
 
   async function submit(e: React.FormEvent) {
@@ -46,7 +52,9 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "recuperar") {
-        const { error } = await supabase.auth.resetPasswordForEmail(em.data, { redirectTo: `${window.location.origin}/reset-password` });
+        const { error } = await supabase.auth.resetPasswordForEmail(em.data, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
         if (error) throw error;
         setSent("Te enviamos un correo con un enlace para crear una nueva contraseña.");
         return;
@@ -55,14 +63,30 @@ function AuthPage() {
       if (!pw.success) return void toast.error(pw.error.issues[0]?.message ?? "Datos inválidos");
       if (mode === "registro") {
         const { error } = await supabase.auth.signUp({
-          email: em.data, password: pw.data,
-          options: { emailRedirectTo: window.location.origin + "/inicio", data: { display_name: name.trim().slice(0, 80) || undefined } },
+          email: em.data,
+          password: pw.data,
+          options: {
+            emailRedirectTo: window.location.origin + "/inicio",
+            data: { display_name: name.trim().slice(0, 80) || undefined },
+          },
         });
         if (error) throw error;
-        setSent("¡Listo! Revisá tu correo y hacé clic en el enlace de confirmación para activar la cuenta.");
+        setSent(
+          "¡Listo! Revisá tu correo y hacé clic en el enlace de confirmación para activar la cuenta.",
+        );
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: em.data, password: pw.data });
-        if (error) throw new Error(error.message.includes("Invalid") ? "Correo o contraseña incorrectos." : error.message.includes("confirmed") ? "Todavía no confirmaste tu correo." : error.message);
+        const { error } = await supabase.auth.signInWithPassword({
+          email: em.data,
+          password: pw.data,
+        });
+        if (error)
+          throw new Error(
+            error.message.includes("Invalid")
+              ? "Correo o contraseña incorrectos."
+              : error.message.includes("confirmed")
+                ? "Todavía no confirmaste tu correo."
+                : error.message,
+          );
         navigate({ to: "/inicio", replace: true });
       }
     } catch (err) {
@@ -73,7 +97,9 @@ function AuthPage() {
   }
 
   async function social(p: "google" | "lovable") {
-    const r = await lovable.auth.signInWithOAuth(p, { redirect_uri: window.location.origin + "/auth" });
+    const r = await lovable.auth.signInWithOAuth(p, {
+      redirect_uri: window.location.origin + "/auth",
+    });
     if (r.error) return void toast.error("No se pudo iniciar sesión.");
     if (r.redirected) return;
     navigate({ to: "/inicio", replace: true });
@@ -82,41 +108,121 @@ function AuthPage() {
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-md rounded-3xl border bg-card p-7 shadow-sm">
-        <Link to="/" className="font-display text-2xl font-semibold text-primary">Teje conmigo</Link>
+        <Link to="/" className="font-display text-2xl font-semibold text-primary">
+          Teje conmigo
+        </Link>
         <h1 className="mt-4 text-2xl font-semibold">
-          {mode === "ingreso" ? "Ingresar" : mode === "registro" ? "Crear cuenta" : "Recuperar contraseña"}
+          {mode === "ingreso"
+            ? "Ingresar"
+            : mode === "registro"
+              ? "Crear cuenta"
+              : "Recuperar contraseña"}
         </h1>
         {sent ? (
-          <div className="mt-6 rounded-xl bg-secondary p-4 text-secondary-foreground">{sent}
-            <Button variant="link" className="px-0" onClick={() => { setSent(null); setMode("ingreso"); }}>Volver a ingresar</Button>
+          <div className="mt-6 rounded-xl bg-secondary p-4 text-secondary-foreground">
+            {sent}
+            <Button
+              variant="link"
+              className="px-0"
+              onClick={() => {
+                setSent(null);
+                setMode("ingreso");
+              }}
+            >
+              Volver a ingresar
+            </Button>
           </div>
         ) : (
           <>
             <form onSubmit={submit} className="mt-6 space-y-4">
               {mode === "registro" && (
-                <div><Label htmlFor="n">Nombre o seudónimo</Label><Input id="n" className="mt-1 h-12" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} /></div>
+                <div>
+                  <Label htmlFor="n">Nombre o seudónimo</Label>
+                  <Input
+                    id="n"
+                    className="mt-1 h-12"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={80}
+                  />
+                </div>
               )}
-              <div><Label htmlFor="e">Correo electrónico</Label><Input id="e" type="email" autoComplete="email" className="mt-1 h-12" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
+              <div>
+                <Label htmlFor="e">Correo electrónico</Label>
+                <Input
+                  id="e"
+                  type="email"
+                  autoComplete="email"
+                  className="mt-1 h-12"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
               {mode !== "recuperar" && (
-                <div><Label htmlFor="p">Contraseña</Label><Input id="p" type="password" autoComplete={mode === "registro" ? "new-password" : "current-password"} className="mt-1 h-12" value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
+                <div>
+                  <Label htmlFor="p">Contraseña</Label>
+                  <Input
+                    id="p"
+                    type="password"
+                    autoComplete={mode === "registro" ? "new-password" : "current-password"}
+                    className="mt-1 h-12"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
               )}
               <Button type="submit" className="h-12 w-full text-base" disabled={busy}>
-                {busy ? "Un momento…" : mode === "ingreso" ? "Ingresar" : mode === "registro" ? "Crear cuenta" : "Enviar enlace"}
+                {busy
+                  ? "Un momento…"
+                  : mode === "ingreso"
+                    ? "Ingresar"
+                    : mode === "registro"
+                      ? "Crear cuenta"
+                      : "Enviar enlace"}
               </Button>
             </form>
             {mode !== "recuperar" && (
               <div className="mt-5 space-y-3">
                 <div className="text-center text-sm text-muted-foreground">o</div>
-                <Button variant="outline" className="h-12 w-full" onClick={() => social("google")}>Continuar con Google</Button>
-                <button type="button" className="lovable-auth-button w-full" onClick={() => social("lovable")}>Continue with Lovable</button>
+                <Button variant="outline" className="h-12 w-full" onClick={() => social("google")}>
+                  Continuar con Google
+                </Button>
+                <button
+                  type="button"
+                  className="lovable-auth-button w-full"
+                  onClick={() => social("lovable")}
+                >
+                  Continue with Lovable
+                </button>
               </div>
             )}
             <div className="mt-6 flex flex-col gap-1 text-sm">
-              {mode === "ingreso" && <>
-                <button className="text-left text-primary hover:underline" onClick={() => setMode("recuperar")}>Olvidé mi contraseña</button>
-                <button className="text-left text-primary hover:underline" onClick={() => setMode("registro")}>¿No tenés cuenta? Creala acá</button>
-              </>}
-              {mode !== "ingreso" && <button className="text-left text-primary hover:underline" onClick={() => setMode("ingreso")}>Ya tengo cuenta</button>}
+              {mode === "ingreso" && (
+                <>
+                  <button
+                    className="text-left text-primary hover:underline"
+                    onClick={() => setMode("recuperar")}
+                  >
+                    Olvidé mi contraseña
+                  </button>
+                  <button
+                    className="text-left text-primary hover:underline"
+                    onClick={() => setMode("registro")}
+                  >
+                    ¿No tenés cuenta? Creala acá
+                  </button>
+                </>
+              )}
+              {mode !== "ingreso" && (
+                <button
+                  className="text-left text-primary hover:underline"
+                  onClick={() => setMode("ingreso")}
+                >
+                  Ya tengo cuenta
+                </button>
+              )}
             </div>
           </>
         )}

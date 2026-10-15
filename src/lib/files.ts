@@ -11,7 +11,9 @@ export async function uploadPrivate(file: File, folder: string): Promise<string>
   if (!data.user) throw new Error("Sesión no válida.");
   const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
   const path = `${data.user.id}/${folder}/${crypto.randomUUID()}-${safe}`;
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type });
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, file, { contentType: file.type });
   if (error) throw error;
   return path;
 }

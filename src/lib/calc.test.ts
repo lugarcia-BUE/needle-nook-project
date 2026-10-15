@@ -1,5 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { ruleOfThree, gauge, counterProgress, projectProgress, skeinsNeeded, skeinsMissing, totalSeconds, remainingEstimate, sessionElapsed } from "./calc";
+import {
+  ruleOfThree,
+  gauge,
+  counterProgress,
+  projectProgress,
+  skeinsNeeded,
+  skeinsMissing,
+  totalSeconds,
+  remainingEstimate,
+  sessionElapsed,
+} from "./calc";
 
 describe("regla de tres", () => {
   it("20 pts = 10 cm → 35 cm = 70 pts", () => {
@@ -44,14 +54,22 @@ describe("progreso", () => {
   it("con objetivo", () => {
     expect(counterProgress(25, 100)).toBe(25);
     expect(counterProgress(150, 100)).toBe(100);
-    expect(projectProgress([{ current_value: 10, target_value: 20 }, { current_value: 30, target_value: 20 }])).toBe(75);
+    expect(
+      projectProgress([
+        { current_value: 10, target_value: 20 },
+        { current_value: 30, target_value: 20 },
+      ]),
+    ).toBe(75);
   });
 });
 
 describe("materiales", () => {
   it("ovillos por gramos y metros (toma el mayor)", () => {
     expect(skeinsNeeded({ requiredGrams: 450, skeinWeight: 100 })?.needed).toBe(5);
-    expect(skeinsNeeded({ requiredGrams: 300, skeinWeight: 100, requiredMeters: 900, skeinLength: 200 })?.needed).toBe(5);
+    expect(
+      skeinsNeeded({ requiredGrams: 300, skeinWeight: 100, requiredMeters: 900, skeinLength: 200 })
+        ?.needed,
+    ).toBe(5);
     expect(skeinsNeeded({})).toBeNull();
     expect(skeinsMissing(5, 2, 1)).toBe(2);
     expect(skeinsMissing(5, 8, 0)).toBe(0);
@@ -70,7 +88,16 @@ describe("tiempo", () => {
     expect(totalSeconds(s)).toBe(900);
   });
   it("descuenta pausas", () => {
-    const e = sessionElapsed({ started_at: "2026-01-01T10:00:00Z", ended_at: null, paused_at: null, paused_seconds: 60, duration_seconds: null }, new Date("2026-01-01T10:10:00Z").getTime());
+    const e = sessionElapsed(
+      {
+        started_at: "2026-01-01T10:00:00Z",
+        ended_at: null,
+        paused_at: null,
+        paused_seconds: 60,
+        duration_seconds: null,
+      },
+      new Date("2026-01-01T10:10:00Z").getTime(),
+    );
     expect(e).toBe(540);
   });
   it("estimación restante", () => {

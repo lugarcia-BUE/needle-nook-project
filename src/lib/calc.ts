@@ -101,11 +101,11 @@ export function projectProgress(
 
 /** Ovillos necesarios: usa gramos y/o metros; si no hay datos devuelve null. */
 export function skeinsNeeded(opts: {
-  requiredGrams?: number | null;
-  requiredMeters?: number | null;
-  skeinWeight?: number | null;
-  skeinLength?: number | null;
-  manualEstimate?: number | null;
+  requiredGrams?: number | null | undefined;
+  requiredMeters?: number | null | undefined;
+  skeinWeight?: number | null | undefined;
+  skeinLength?: number | null | undefined;
+  manualEstimate?: number | null | undefined;
 }): { needed: number; basis: string } | null {
   const candidates: { n: number; basis: string }[] = [];
   if (opts.requiredGrams && opts.skeinWeight)

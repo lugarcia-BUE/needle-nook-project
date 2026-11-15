@@ -3,6 +3,8 @@ import { PageHeader, Empty } from "@/components/common";
 export const Route = createFileRoute("/_authenticated/compras")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Compras — Teje conmigo" },
       { name: "description", content: "Compras en Teje conmigo." },
       { property: "og:title", content: "Compras — Teje conmigo" },

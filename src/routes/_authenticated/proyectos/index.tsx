@@ -9,6 +9,8 @@ import { projectProgress } from "@/lib/calc";
 export const Route = createFileRoute("/_authenticated/proyectos/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Mis proyectos — Teje conmigo" },
       { name: "description", content: "Tus proyectos de tejido." },
       { property: "og:title", content: "Mis proyectos — Teje conmigo" },

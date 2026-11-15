@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Confirm, Empty, Loading } from "@/components/common";
+import { Confirm, Empty, Loading, ErrorBox } from "@/components/common";
 import { ruleOfThree, gauge, fmt } from "@/lib/calc";
 import {
   useProjects,
@@ -23,9 +23,9 @@ import {
 } from "@/lib/data";
 
 export function RuleOfThreeCalculator({ defaultProjectId }: { defaultProjectId?: string }) {
-  const [original, setOriginal] = useState("20");
-  const [refMeasure, setRefMeasure] = useState("10");
-  const [newMeasure, setNewMeasure] = useState("35");
+  const [original, setOriginal] = useState("");
+  const [refMeasure, setRefMeasure] = useState("");
+  const [newMeasure, setNewMeasure] = useState("");
   const [title, setTitle] = useState("Regla de tres: puntos / cm");
   const [projectId, setProjectId] = useState(defaultProjectId ?? "");
   const [saveOpen, setSaveOpen] = useState(false);
@@ -45,6 +45,7 @@ export function RuleOfThreeCalculator({ defaultProjectId }: { defaultProjectId?:
       toast.error("Completá los datos antes de guardar.");
       return;
     }
+    try {
     await saveCalc.mutateAsync({
       project_id: projectId,
       kind: "regla_de_tres",
@@ -61,6 +62,7 @@ export function RuleOfThreeCalculator({ defaultProjectId }: { defaultProjectId?:
       },
     });
     setSaveOpen(false);
+    } catch { /* Mutation displays the error; preserve inputs. */ }
   };
 
   return (
@@ -81,6 +83,7 @@ export function RuleOfThreeCalculator({ defaultProjectId }: { defaultProjectId?:
             <Input
               id="rot-orig"
               placeholder="Ej: 20 (puntos)"
+              inputMode="decimal"
               value={original}
               onChange={(e) => setOriginal(e.target.value)}
               className="mt-1.5 h-11"
@@ -92,6 +95,7 @@ export function RuleOfThreeCalculator({ defaultProjectId }: { defaultProjectId?:
             <Input
               id="rot-ref"
               placeholder="Ej: 10 (cm)"
+              inputMode="decimal"
               value={refMeasure}
               onChange={(e) => setRefMeasure(e.target.value)}
               className="mt-1.5 h-11"
@@ -103,6 +107,7 @@ export function RuleOfThreeCalculator({ defaultProjectId }: { defaultProjectId?:
             <Input
               id="rot-new"
               placeholder="Ej: 35 (cm)"
+              inputMode="decimal"
               value={newMeasure}
               onChange={(e) => setNewMeasure(e.target.value)}
               className="mt-1.5 h-11"
@@ -145,7 +150,8 @@ export function RuleOfThreeCalculator({ defaultProjectId }: { defaultProjectId?:
                         <Label htmlFor="save-title">Título o descripción del cálculo</Label>
                         <Input
                           id="save-title"
-                          value={title}
+                          inputMode="decimal"
+              value={title}
                           onChange={(e) => setTitle(e.target.value)}
                           placeholder="Ej: Puntos para ancho de espalda"
                           className="mt-1.5 h-11"
@@ -156,7 +162,8 @@ export function RuleOfThreeCalculator({ defaultProjectId }: { defaultProjectId?:
                         <select
                           id="save-proj"
                           className="mt-1.5 flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
-                          value={projectId}
+                          inputMode="decimal"
+              value={projectId}
                           onChange={(e) => setProjectId(e.target.value)}
                           required
                         >
@@ -215,10 +222,10 @@ export function RuleOfThreeCalculator({ defaultProjectId }: { defaultProjectId?:
 }
 
 export function GaugeCalculator({ defaultProjectId }: { defaultProjectId?: string }) {
-  const [stitches10, setStitches10] = useState("20");
-  const [rows10, setRows10] = useState("26");
-  const [targetWidth, setTargetWidth] = useState("50");
-  const [targetHeight, setTargetHeight] = useState("60");
+  const [stitches10, setStitches10] = useState("");
+  const [rows10, setRows10] = useState("");
+  const [targetWidth, setTargetWidth] = useState("");
+  const [targetHeight, setTargetHeight] = useState("");
   const [title, setTitle] = useState("Muestra de tensión 10x10 cm");
   const [projectId, setProjectId] = useState(defaultProjectId ?? "");
   const [saveOpen, setSaveOpen] = useState(false);
@@ -238,6 +245,7 @@ export function GaugeCalculator({ defaultProjectId }: { defaultProjectId?: strin
       toast.error("Completá los datos de la muestra antes de guardar.");
       return;
     }
+    try {
     await saveCalc.mutateAsync({
       project_id: projectId,
       kind: "muestra",
@@ -256,6 +264,7 @@ export function GaugeCalculator({ defaultProjectId }: { defaultProjectId?: strin
       },
     });
     setSaveOpen(false);
+    } catch { /* Mutation displays the error; preserve inputs. */ }
   };
 
   return (
@@ -277,6 +286,7 @@ export function GaugeCalculator({ defaultProjectId }: { defaultProjectId?: strin
             <Input
               id="gauge-s10"
               placeholder="Ej: 20"
+              inputMode="decimal"
               value={stitches10}
               onChange={(e) => setStitches10(e.target.value)}
               className="mt-1.5 h-11"
@@ -288,6 +298,7 @@ export function GaugeCalculator({ defaultProjectId }: { defaultProjectId?: strin
             <Input
               id="gauge-r10"
               placeholder="Ej: 26"
+              inputMode="decimal"
               value={rows10}
               onChange={(e) => setRows10(e.target.value)}
               className="mt-1.5 h-11"
@@ -369,8 +380,8 @@ export function GaugeCalculator({ defaultProjectId }: { defaultProjectId?: strin
             </div>
 
             {/* Alerta requerida por el README */}
-            <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-50/60 p-4 text-sm text-amber-950 dark:border-amber-500/20 dark:bg-amber-950/20 dark:text-amber-200">
-              <Info className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+            <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm text-foreground">
+              <Info className="h-5 w-5 shrink-0 text-warning mt-0.5" />
               <div>
                 <p className="font-semibold">Ajuste por técnica y estructura</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">
@@ -451,10 +462,12 @@ export function GaugeCalculator({ defaultProjectId }: { defaultProjectId?: strin
 }
 
 export function SavedCalculationsList({ projectId }: { projectId?: string }) {
-  const { data: calcs, isLoading } = useCalculations(projectId);
+  const { data: calcs, isLoading, error } = useCalculations(projectId);
   const deleteCalc = useDeleteCalculation();
 
   if (isLoading) return <Loading label="Cargando cálculos guardados…" />;
+
+  if (error) return <ErrorBox error={error} />;
 
   if (!calcs || calcs.length === 0) {
     return (
@@ -503,7 +516,7 @@ export function SavedCalculationsList({ projectId }: { projectId?: string }) {
             className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border bg-card p-4 shadow-sm"
           >
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                   {isRot ? "Regla de tres" : "Muestra 10×10"}
                 </span>
@@ -529,6 +542,7 @@ export function SavedCalculationsList({ projectId }: { projectId?: string }) {
                     <b>{gaugeInputs.rows10 ?? "—"} filas</b> →{" "}
                     <b>{fmt(Number(gaugeResult.stitchesPerCm ?? 0), 2)} pts/cm</b>,{" "}
                     <b>{fmt(Number(gaugeResult.rowsPerCm ?? 0), 2)} filas/cm</b>
+                    {gaugeResult.rows && <> · Alto ({gaugeInputs.targetHeight ?? "—"} cm): <b>{gaugeResult.rows.rounded} filas</b></>}
                     {gaugeResult.stitches && (
                       <>
                         {" "}
@@ -550,6 +564,8 @@ export function SavedCalculationsList({ projectId }: { projectId?: string }) {
               onConfirm={() => deleteCalc.mutate(c.id)}
               trigger={
                 <Button
+                  aria-label="Eliminar cálculo"
+                  title="Eliminar cálculo"
                   variant="ghost"
                   size="sm"
                   className="h-9 text-muted-foreground hover:text-destructive shrink-0"

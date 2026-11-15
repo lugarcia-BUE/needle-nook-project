@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PageHeader, Loading, Empty, Confirm } from "@/components/common";
+import { PageHeader, Loading, Empty, Confirm, ErrorBox } from "@/components/common";
 import { MaterialForm } from "@/components/MaterialForm";
 import { ProjectMaterialDialog } from "@/components/ProjectMaterialDialog";
 import {
@@ -31,6 +31,8 @@ import { label, MATERIAL_KINDS, NEEDLE_TYPES, YARN_WEIGHTS } from "@/lib/options
 export const Route = createFileRoute("/_authenticated/materiales")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Materiales — Teje conmigo" },
       { name: "description", content: "Inventario de hilados, agujas y accesorios para tejido." },
       { property: "og:title", content: "Materiales — Teje conmigo" },
@@ -45,8 +47,8 @@ export const Route = createFileRoute("/_authenticated/materiales")({
 
 function MaterialesPage() {
   const [filterKind, setFilterKind] = useState<string>("todos");
-  const { data: materials, isLoading: matsLoading } = useMaterials();
-  const { data: projMaterials, isLoading: pmLoading } = useProjectMaterials();
+  const { data: materials, isLoading: matsLoading, error: matsError } = useMaterials();
+  const { data: projMaterials, isLoading: pmLoading, error: pmError } = useProjectMaterials();
   const deleteMaterial = useDeleteMaterial();
   const removeProjMaterial = useRemoveProjectMaterial();
   const addShopMut = useAddShoppingItem();
@@ -121,7 +123,7 @@ function MaterialesPage() {
 
           {matsLoading ? (
             <Loading label="Cargando inventario de materiales…" />
-          ) : filteredMaterials.length === 0 ? (
+          ) : matsError ? <ErrorBox error={matsError} /> : filteredMaterials.length === 0 ? (
             <Empty
               icon={<Package className="h-10 w-10 text-muted-foreground" />}
               title="Sin materiales en esta categoría"
@@ -161,7 +163,8 @@ function MaterialesPage() {
                           onConfirm={() => deleteMaterial.mutate(m.id)}
                           trigger={
                             <Button
-                              variant="ghost"
+                              aria-label="Eliminar material" title="Eliminar material"
+                            variant="ghost"
                               size="sm"
                               className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
                             >
@@ -243,7 +246,7 @@ function MaterialesPage() {
         <TabsContent value="proyectos" className="space-y-4">
           {pmLoading ? (
             <Loading label="Cargando materiales en proyectos…" />
-          ) : !projMaterials || projMaterials.length === 0 ? (
+          ) : pmError ? <ErrorBox error={pmError} /> : !projMaterials || projMaterials.length === 0 ? (
             <Empty
               icon={<FolderGit2 className="h-10 w-10 text-muted-foreground" />}
               title="Sin materiales asignados a proyectos"
@@ -269,7 +272,7 @@ function MaterialesPage() {
                     key={pm.id}
                     className="flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border bg-card p-5 shadow-sm"
                   >
-                    <div className="space-y-2">
+                    <div className="min-w-0 space-y-2 break-words">
                       <div className="flex flex-wrap items-center gap-2">
                         {pm.projects?.name && (
                           <Link
@@ -305,7 +308,7 @@ function MaterialesPage() {
                         )}
                         {needed && (
                           <span className="text-foreground">
-                            Ovillos calculados: <b>{needed.needed}</b> ({needed.basis})
+                            {mat?.kind === "hilado" ? "Ovillos calculados:" : "Unidades estimadas:"} <b>{needed.needed}</b> ({needed.basis})
                           </span>
                         )}
                         <span>
@@ -326,11 +329,11 @@ function MaterialesPage() {
                       {/* Estado de compras */}
                       <div className="text-xs">
                         {missing > 0 ? (
-                          <span className="font-semibold text-amber-600 dark:text-amber-400">
-                            ⚠️ Faltan comprar {missing} ovillo(s) para este proyecto.
+                          <span className="font-semibold text-warning">
+                            ⚠️ Faltan comprar {missing} {mat?.kind === "hilado" ? "ovillos" : "unidades"} para este proyecto.
                           </span>
                         ) : needed ? (
-                          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                          <span className="font-semibold text-success">
                             ✓ Cantidad suficiente de material para el proyecto.
                           </span>
                         ) : (
@@ -354,9 +357,9 @@ function MaterialesPage() {
                           onClick={() =>
                             addShopMut.mutate({
                               project_id: pm.project_id,
-                              description: `Comprar ${missing} ovillo(s) de ${mat.name} para ${pm.projects?.name || "proyecto"}`,
+                              description: `${mat.name}${mat.color ? ` (${mat.color})` : ""}${mat.color_code ? ` · ${mat.color_code}` : ""} para ${pm.projects?.name || "proyecto"}`.slice(0, 200),
                               quantity: missing,
-                              unit: "ovillo(s)",
+                              unit: mat.kind === "hilado" ? "ovillos" : "unidades",
                             })
                           }
                           disabled={addShopMut.isPending}
@@ -373,6 +376,7 @@ function MaterialesPage() {
                         onConfirm={() => removeProjMaterial.mutate(pm.id)}
                         trigger={
                           <Button
+                            aria-label="Quitar material del proyecto" title="Quitar material del proyecto"
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"

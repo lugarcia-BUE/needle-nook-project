@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Play, Plus, Calculator, Package, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,8 @@ import {
 export const Route = createFileRoute("/_authenticated/proyectos/$id")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Proyecto — Teje conmigo" },
       { name: "description", content: "Detalle del proyecto." },
       { property: "og:title", content: "Proyecto — Teje conmigo" },
@@ -118,7 +120,7 @@ function Detail() {
 
         {/* Tab 1: Contadores */}
         <TabsContent value="contadores" className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-3 items-center justify-between">
             <h2 className="text-xl font-semibold">Contadores de vueltas</h2>
             <CounterForm
               projectId={id}
@@ -155,7 +157,7 @@ function Detail() {
 
         {/* Tab 2: Materiales del proyecto */}
         <TabsContent value="materiales" className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-3 items-center justify-between">
             <h2 className="text-xl font-semibold">Materiales de la labor</h2>
             <ProjectMaterialDialog
               projectId={id}
@@ -226,7 +228,7 @@ function Detail() {
                         )}
                         {needed && (
                           <span className="text-primary font-medium">
-                            Ovillos: <b>{needed.needed}</b>
+                            {mat?.kind === "hilado" ? "Ovillos:" : "Unidades:"} <b>{needed.needed}</b>
                           </span>
                         )}
                         <span>
@@ -239,8 +241,8 @@ function Detail() {
                         )}
                       </div>
                       {missing > 0 && (
-                        <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                          ⚠️ Faltan comprar {missing} ovillo(s).
+                        <p className="text-xs font-semibold text-warning">
+                          ⚠️ Faltan comprar {missing} {mat?.kind === "hilado" ? "ovillos" : "unidades"}.
                         </p>
                       )}
                     </div>
@@ -253,6 +255,7 @@ function Detail() {
                         onConfirm={() => removeProjMat.mutate(pm.id)}
                         trigger={
                           <Button
+                            aria-label="Desvincular material" title="Desvincular material"
                             variant="ghost"
                             size="sm"
                             className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
@@ -271,12 +274,12 @@ function Detail() {
 
         {/* Tab 3: Cálculos del proyecto */}
         <TabsContent value="calculos" className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-3 items-center justify-between">
             <h2 className="text-xl font-semibold">Cálculos asociados</h2>
             <Button asChild variant="secondary" className="gap-1.5">
-              <a href="/calculadoras">
+              <Link to="/calculadoras">
                 <Calculator className="h-4 w-4" /> Ir a Calculadoras
-              </a>
+              </Link>
             </Button>
           </div>
           <SavedCalculationsList projectId={id} />

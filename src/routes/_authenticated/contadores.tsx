@@ -7,6 +7,8 @@ import { useProjects, useAllCounters } from "@/lib/data";
 export const Route = createFileRoute("/_authenticated/contadores")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Contadores — Teje conmigo" },
       { name: "description", content: "Tus contadores de vueltas." },
       { property: "og:title", content: "Contadores — Teje conmigo" },

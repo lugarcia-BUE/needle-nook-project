@@ -17,6 +17,8 @@ export const Route = createFileRoute("/auth")({
     }) as { modo?: "registro" | "recuperar" },
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Ingresar — Teje conmigo" },
       { name: "description", content: "Ingresá o creá tu cuenta en Teje conmigo." },
       { property: "og:title", content: "Ingresar — Teje conmigo" },

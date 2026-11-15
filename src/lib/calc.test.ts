@@ -9,6 +9,7 @@ import {
   totalSeconds,
   remainingEstimate,
   sessionElapsed,
+  validQuantity,
 } from "./calc";
 
 describe("regla de tres", () => {
@@ -44,6 +45,10 @@ describe("muestra", () => {
     }
   });
   it("rechaza cero", () => expect(gauge("0", "10", "1", "1").ok).toBe(false));
+  it("rechaza medidas presentes no numéricas en lugar de omitirlas", () => {
+    expect(gauge("20", "26", "abc", "60").ok).toBe(false);
+    expect(gauge("20", "26", "50", "abc").ok).toBe(false);
+  });
 });
 
 describe("progreso", () => {
@@ -64,6 +69,21 @@ describe("progreso", () => {
 });
 
 describe("materiales", () => {
+  it("no acepta cantidades negativas ni infinitas y permite campos opcionales vacíos", () => {
+    expect(validQuantity("-1")).toBe(false);
+    expect(validQuantity("Infinity")).toBe(false);
+    expect(validQuantity("abc")).toBe(false);
+    expect(validQuantity("", false)).toBe(false);
+    expect(validQuantity("")).toBe(true);
+    expect(validQuantity("2,5", false)).toBe(true);
+    expect(validQuantity("0", false, true)).toBe(false);
+  });
+  it("cero gramos no inventa consumo y una estimación manual permanece editable", () => {
+    expect(skeinsNeeded({ requiredGrams: 0, skeinWeight: 100 })?.needed).toBe(0);
+    expect(skeinsNeeded({ manualEstimate: 3.5 })?.needed).toBe(3.5);
+    expect(skeinsNeeded({ requiredGrams: 450 }) ).toBeNull();
+    expect(skeinsNeeded({ requiredGrams: -450, skeinWeight: 100 })).toBeNull();
+  });
   it("ovillos por gramos y metros (toma el mayor)", () => {
     expect(skeinsNeeded({ requiredGrams: 450, skeinWeight: 100 })?.needed).toBe(5);
     expect(

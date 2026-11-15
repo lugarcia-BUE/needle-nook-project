@@ -3,6 +3,8 @@ import { PageHeader, Empty } from "@/components/common";
 export const Route = createFileRoute("/_authenticated/comunidad")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Comunidad — Teje conmigo" },
       { name: "description", content: "Comunidad en Teje conmigo." },
       { property: "og:title", content: "Comunidad — Teje conmigo" },

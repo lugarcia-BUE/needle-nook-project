@@ -396,7 +396,7 @@ export function useRemoveProjectMaterial() {
 // ---- Compras ----
 export function useShoppingItems(projectId?: string) {
   return useQuery({
-    queryKey: qk.shopping,
+    queryKey: [...qk.shopping, projectId ?? "all"],
     queryFn: async () => {
       let q = supabase
         .from("shopping_items")
@@ -423,6 +423,25 @@ export function useAddShoppingItem() {
       toast.success("Elemento agregado a la lista de compras");
       qc.invalidateQueries({ queryKey: qk.shopping });
     },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useUpdateShoppingItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, purchased }: { id: string; purchased: boolean }) =>
+      unwrap(await supabase.from("shopping_items").update({ purchased }).eq("id", id).select().single()),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.shopping }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+}
+
+export function useDeleteShoppingItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => unwrap(await supabase.from("shopping_items").delete().eq("id", id)),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.shopping }); },
     onError: (e: Error) => toast.error(e.message),
   });
 }

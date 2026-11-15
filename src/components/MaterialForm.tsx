@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { validQuantity } from "@/lib/calc";
 import { MATERIAL_KINDS, NEEDLE_TYPES, YARN_WEIGHTS } from "@/lib/options";
 import { useSaveMaterial, type Material } from "@/lib/data";
 
@@ -64,36 +65,43 @@ export function MaterialForm({
       return;
     }
 
+    if (!validQuantity(quantityAvailable, false) ||
+        (kind === "hilado" && (!validQuantity(skeinWeightG, true, true) || !validQuantity(skeinLengthM, true, true))) ||
+        (kind === "aguja" && (!validQuantity(diameterMm, true, true) || !validQuantity(lengthCm, true, true)))) {
+      toast.error("Revisá las cantidades: deben ser números válidos; pesos, metros y medidas deben ser mayores que cero.");
+      return;
+    }
     const qty = Number(quantityAvailable.replace(",", "."));
     if (isNaN(qty) || qty < 0) {
       toast.error("La cantidad disponible no puede ser negativa.");
       return;
     }
 
-    const weight = skeinWeightG ? Number(skeinWeightG.replace(",", ".")) : null;
+    const weight = kind === "hilado" && skeinWeightG ? Number(skeinWeightG.replace(",", ".")) : null;
     if (weight !== null && (isNaN(weight) || weight <= 0)) {
       toast.error("El peso del ovillo debe ser mayor que cero.");
       return;
     }
 
-    const length = skeinLengthM ? Number(skeinLengthM.replace(",", ".")) : null;
+    const length = kind === "hilado" && skeinLengthM ? Number(skeinLengthM.replace(",", ".")) : null;
     if (length !== null && (isNaN(length) || length <= 0)) {
       toast.error("Los metros por ovillo deben ser mayores que cero.");
       return;
     }
 
-    const diam = diameterMm ? Number(diameterMm.replace(",", ".")) : null;
+    const diam = kind === "aguja" && diameterMm ? Number(diameterMm.replace(",", ".")) : null;
     if (diam !== null && (isNaN(diam) || diam <= 0)) {
       toast.error("El diámetro de aguja debe ser mayor que cero.");
       return;
     }
 
-    const needleLen = lengthCm ? Number(lengthCm.replace(",", ".")) : null;
+    const needleLen = kind === "aguja" && lengthCm ? Number(lengthCm.replace(",", ".")) : null;
     if (needleLen !== null && (isNaN(needleLen) || needleLen <= 0)) {
       toast.error("El largo de aguja debe ser mayor que cero.");
       return;
     }
 
+    try {
     await saveMut.mutateAsync({
       ...(material?.id ? { id: material.id } : {}),
       kind,
@@ -114,6 +122,12 @@ export function MaterialForm({
 
     setOpen(false);
     onSaved?.();
+    if (!material) {
+      setName(""); setBrand(""); setComposition(""); setWeightCategory("");
+      setColor(""); setColorCode(""); setSkeinWeightG(""); setSkeinLengthM("");
+      setQuantityAvailable("1"); setNeedleType(""); setDiameterMm(""); setLengthCm(""); setNotes("");
+    }
+    } catch { /* The mutation displays the error and keeps the form open. */ }
   };
 
   return (
@@ -122,7 +136,7 @@ export function MaterialForm({
         {trigger ? (
           trigger
         ) : material ? (
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Editar material" title="Editar material">
             <Edit2 className="h-4 w-4" />
           </Button>
         ) : (
@@ -160,6 +174,7 @@ export function MaterialForm({
             <Label htmlFor="mat-name">Nombre / Identificación *</Label>
             <Input
               id="mat-name"
+              maxLength={200}
               placeholder={
                 kind === "hilado"
                   ? "Ej: Merino Sedificada Sport"
@@ -245,7 +260,7 @@ export function MaterialForm({
                   <Label htmlFor="mat-weight">Peso ovillo (g)</Label>
                   <Input
                     id="mat-weight"
-                    type="number"
+                    type="number" min="0"
                     step="any"
                     placeholder="Ej: 100"
                     value={skeinWeightG}
@@ -257,7 +272,7 @@ export function MaterialForm({
                   <Label htmlFor="mat-len">Metros por ovillo (m)</Label>
                   <Input
                     id="mat-len"
-                    type="number"
+                    type="number" min="0"
                     step="any"
                     placeholder="Ej: 200"
                     value={skeinLengthM}
@@ -269,7 +284,7 @@ export function MaterialForm({
                   <Label htmlFor="mat-qty">Ovillos disponibles</Label>
                   <Input
                     id="mat-qty"
-                    type="number"
+                    type="number" min="0"
                     step="any"
                     placeholder="Ej: 4"
                     value={quantityAvailable}
@@ -318,7 +333,7 @@ export function MaterialForm({
                   <Label htmlFor="needle-diam">Diámetro (mm)</Label>
                   <Input
                     id="needle-diam"
-                    type="number"
+                    type="number" min="0"
                     step="0.25"
                     placeholder="Ej: 4.5"
                     value={diameterMm}
@@ -330,7 +345,7 @@ export function MaterialForm({
                   <Label htmlFor="needle-len">Largo (cm)</Label>
                   <Input
                     id="needle-len"
-                    type="number"
+                    type="number" min="0"
                     step="any"
                     placeholder="Ej: 80"
                     value={lengthCm}
@@ -342,7 +357,7 @@ export function MaterialForm({
                   <Label htmlFor="needle-qty">Cantidad</Label>
                   <Input
                     id="needle-qty"
-                    type="number"
+                    type="number" min="0"
                     step="1"
                     placeholder="Ej: 1"
                     value={quantityAvailable}
@@ -371,7 +386,7 @@ export function MaterialForm({
                 <Label htmlFor="acc-qty">Cantidad disponible</Label>
                 <Input
                   id="acc-qty"
-                  type="number"
+                  type="number" min="0"
                   step="any"
                   placeholder="Ej: 10"
                   value={quantityAvailable}

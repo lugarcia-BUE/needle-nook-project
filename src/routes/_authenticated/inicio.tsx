@@ -9,6 +9,8 @@ import { projectProgress, totalSeconds, formatDuration, startOfWeek } from "@/li
 export const Route = createFileRoute("/_authenticated/inicio")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Inicio — Teje conmigo" },
       { name: "description", content: "Tu panel de tejido." },
       { property: "og:title", content: "Inicio — Teje conmigo" },

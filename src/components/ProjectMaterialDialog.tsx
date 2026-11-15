@@ -21,7 +21,7 @@ import {
   type Material,
   type PopulatedProjectMaterial,
 } from "@/lib/data";
-import { skeinsNeeded, skeinsMissing } from "@/lib/calc";
+import { validQuantity, skeinsNeeded, skeinsMissing } from "@/lib/calc";
 
 const selectCls =
   "mt-1.5 flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm";
@@ -70,16 +70,20 @@ export function ProjectMaterialDialog({
   const purchased = qtyPurchased ? Number(qtyPurchased.replace(",", ".")) : 0;
   const used = qtyUsed ? Number(qtyUsed.replace(",", ".")) : 0;
 
-  const neededResult = skeinsNeeded({
+  const validInputs = [requiredGrams, requiredMeters, qtyEstimated, qtyPurchased, qtyUsed].every((v) => validQuantity(v));
+  const neededResult = validInputs ? skeinsNeeded({
     requiredGrams: g,
     requiredMeters: m,
     skeinWeight: selectedMaterial?.skein_weight_g,
     skeinLength: selectedMaterial?.skein_length_m,
-    manualEstimate: estManual,
-  });
+    manualEstimate: selectedMaterial?.kind === "hilado" ? estManual : null,
+  }) : null;
+  const automaticResult = validInputs ? skeinsNeeded({ requiredGrams: g, requiredMeters: m, skeinWeight: selectedMaterial?.skein_weight_g, skeinLength: selectedMaterial?.skein_length_m }) : null;
+  const isYarn = selectedMaterial?.kind === "hilado";
+  const needed = neededResult ?? (validInputs && estManual !== null ? { needed: estManual, basis: "estimación cargada manualmente" } : null);
 
   const available = selectedMaterial?.quantity_available ?? 0;
-  const missing = neededResult ? skeinsMissing(neededResult.needed, available, purchased) : 0;
+  const missing = needed ? skeinsMissing(needed.needed, available, purchased) : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,15 +96,20 @@ export function ProjectMaterialDialog({
       return;
     }
 
+    if (!validInputs) {
+      toast.error("Las cantidades deben ser números válidos y no negativos.");
+      return;
+    }
     const payload = {
       required_grams: g,
       required_meters: m,
-      qty_estimated: neededResult ? neededResult.needed : estManual,
+      qty_estimated: estManual,
       qty_purchased: purchased,
       qty_used: used,
       notes: notes.trim() || null,
     };
 
+    try {
     if (projectMaterial) {
       await updateMut.mutateAsync({
         id: projectMaterial.id,
@@ -115,18 +124,21 @@ export function ProjectMaterialDialog({
     }
 
     setOpen(false);
+    } catch { /* Mutation errors are shown without closing the form. */ }
   };
 
   const handleAddToShopping = async () => {
-    if (!selectedMaterial || missing <= 0) return;
+    if (!selectedMaterial || !projectId || !validInputs || missing <= 0) return;
     const projName = projects?.find((p) => p.id === projectId)?.name;
     const desc = `${selectedMaterial.name}${selectedMaterial.color ? ` (Color: ${selectedMaterial.color})` : ""}${selectedMaterial.color_code ? ` - ${selectedMaterial.color_code}` : ""}`;
+    try {
     await addShopMut.mutateAsync({
       project_id: projectId || null,
-      description: `Comprar ${missing} ovillo(s) de ${desc}${projName ? ` para ${projName}` : ""}`,
+      description: `${desc}${projName ? ` para ${projName}` : ""}`.slice(0, 200),
       quantity: missing,
-      unit: "ovillo(s)",
+      unit: isYarn ? "ovillos" : "unidades",
     });
+    } catch { /* Mutation displays the error. */ }
   };
 
   return (
@@ -135,7 +147,7 @@ export function ProjectMaterialDialog({
         {trigger ? (
           trigger
         ) : projectMaterial ? (
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="Editar material del proyecto" title="Editar material del proyecto">
             <Edit3 className="h-4 w-4" />
           </Button>
         ) : (
@@ -225,12 +237,12 @@ export function ProjectMaterialDialog({
           {/* Consumo y cantidades estimadas */}
           <div className="space-y-3 pt-1">
             <h4 className="text-sm font-semibold">Consumo estimado</h4>
-            <div className="grid gap-3 sm:grid-cols-2">
+            {isYarn && <div className="grid gap-3 sm:grid-cols-2">
               <div>
                 <Label htmlFor="pm-grams">Gramos necesarios (g)</Label>
                 <Input
                   id="pm-grams"
-                  type="number"
+                  type="number" min="0"
                   step="any"
                   placeholder="Ej: 450"
                   value={requiredGrams}
@@ -242,7 +254,7 @@ export function ProjectMaterialDialog({
                 <Label htmlFor="pm-meters">Metros necesarios (m)</Label>
                 <Input
                   id="pm-meters"
-                  type="number"
+                  type="number" min="0"
                   step="any"
                   placeholder="Ej: 900"
                   value={requiredMeters}
@@ -250,39 +262,40 @@ export function ProjectMaterialDialog({
                   className="mt-1.5 h-11"
                 />
               </div>
-            </div>
+            </div>}
 
             {/* Cálculo de ovillos */}
-            {neededResult ? (
+            {needed ? (
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm space-y-1.5">
                 <div className="flex items-center gap-1.5 font-medium text-primary">
                   <Info className="h-4 w-4" />
                   <span>
-                    Cálculo automático de ovillos: <b>{neededResult.needed} ovillos necesarios</b>
+                    {automaticResult ? "Cálculo automático" : "Estimación manual"}: <b>{needed.needed} {isYarn ? "ovillos" : "unidades"} necesarios</b>
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Base del cálculo: {neededResult.basis}.
+                  Base del cálculo: {needed.basis}.
                 </p>
                 <div className="text-xs">
                   {missing > 0 ? (
-                    <span className="font-semibold text-amber-600 dark:text-amber-400">
+                    <span className="font-semibold text-warning">
                       ⚠️ Tenés {available} disponibles (+ {purchased} comprados). Faltan comprar:{" "}
-                      <b>{missing} ovillo(s)</b>.
+                      <b>{missing} {isYarn ? "ovillos" : "unidades"}</b>.
                     </span>
                   ) : (
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    <span className="font-semibold text-success">
                       ✓ Cantidad suficiente para completar el proyecto.
                     </span>
                   )}
                 </div>
               </div>
-            ) : (
+            ) : null}
+            {!automaticResult && (
               <div>
                 <Label htmlFor="pm-est">Cantidad estimada manual (ovillos / unidades)</Label>
                 <Input
                   id="pm-est"
-                  type="number"
+                  type="number" min="0"
                   step="any"
                   placeholder="Ej: 5"
                   value={qtyEstimated}
@@ -300,7 +313,7 @@ export function ProjectMaterialDialog({
                 <Label htmlFor="pm-purch">Cantidad comprada</Label>
                 <Input
                   id="pm-purch"
-                  type="number"
+                  type="number" min="0"
                   step="any"
                   placeholder="Ej: 3"
                   value={qtyPurchased}
@@ -312,7 +325,7 @@ export function ProjectMaterialDialog({
                 <Label htmlFor="pm-used">Cantidad utilizada real</Label>
                 <Input
                   id="pm-used"
-                  type="number"
+                  type="number" min="0"
                   step="any"
                   placeholder="Ej: 2.5"
                   value={qtyUsed}
@@ -340,9 +353,9 @@ export function ProjectMaterialDialog({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="gap-1.5 text-xs text-primary"
+                className="gap-1.5 text-xs text-primary h-auto min-h-9 whitespace-normal"
                 onClick={handleAddToShopping}
-                disabled={addShopMut.isPending}
+                disabled={addShopMut.isPending || !projectId}
               >
                 <ShoppingCart className="h-3.5 w-3.5" />
                 Añadir {missing} faltante(s) a lista de compras

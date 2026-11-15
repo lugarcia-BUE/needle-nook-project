@@ -10,6 +10,8 @@ import {
 export const Route = createFileRoute("/_authenticated/calculadoras")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Calculadoras — Teje conmigo" },
       { name: "description", content: "Regla de tres y muestra de tensión para tus tejidos." },
       { property: "og:title", content: "Calculadoras — Teje conmigo" },

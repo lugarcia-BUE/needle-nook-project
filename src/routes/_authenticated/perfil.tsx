@@ -3,6 +3,8 @@ import { PageHeader, Empty } from "@/components/common";
 export const Route = createFileRoute("/_authenticated/perfil")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Mi perfil — Teje conmigo" },
       { name: "description", content: "Mi perfil en Teje conmigo." },
       { property: "og:title", content: "Mi perfil — Teje conmigo" },

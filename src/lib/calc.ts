@@ -15,6 +15,13 @@ export function fmt(n: number, decimals = 2): string {
   return n.toLocaleString("es-AR", { maximumFractionDigits: decimals });
 }
 
+/** Campos opcionales vacíos son válidos; los valores presentes deben ser finitos y no negativos. */
+export function validQuantity(value: string, optional = true, positive = false): boolean {
+  if (value.trim() === "") return optional;
+  const n = parseNum(value);
+  return n !== null && (positive ? n > 0 : n >= 0);
+}
+
 /** nuevo valor = valor original × nueva medida / medida de referencia */
 export function ruleOfThree(
   original: string,
@@ -29,6 +36,7 @@ export function ruleOfThree(
   if (b === 0) return { ok: false, error: "La medida de referencia no puede ser cero." };
   if (a < 0 || b < 0 || c < 0) return { ok: false, error: "Los valores no pueden ser negativos." };
   const value = (a * c) / b;
+  if (!Number.isFinite(value)) return { ok: false, error: "El resultado es demasiado grande. Revisá los valores." };
   return {
     ok: true,
     value,
@@ -66,10 +74,14 @@ export function gauge(
     return { ok: false, error: "Los puntos y filas de la muestra deben ser mayores que cero." };
   const w = parseNum(width);
   const h = parseNum(height);
+  if ((width.trim() !== "" && w === null) || (height.trim() !== "" && h === null))
+    return { ok: false, error: "Ingresá medidas numéricas válidas." };
   if ((w !== null && w < 0) || (h !== null && h < 0))
     return { ok: false, error: "Las medidas no pueden ser negativas." };
   const spc = s / 10;
   const rpc = r / 10;
+  if ((w !== null && !Number.isFinite(spc * w)) || (h !== null && !Number.isFinite(rpc * h)))
+    return { ok: false, error: "El resultado es demasiado grande. Revisá las medidas." };
   return {
     ok: true,
     stitchesPerCm: spc,
@@ -108,12 +120,12 @@ export function skeinsNeeded(opts: {
   manualEstimate?: number | null | undefined;
 }): { needed: number; basis: string } | null {
   const candidates: { n: number; basis: string }[] = [];
-  if (opts.requiredGrams && opts.skeinWeight)
+  if (opts.requiredGrams != null && opts.requiredGrams >= 0 && Number.isFinite(opts.requiredGrams) && opts.skeinWeight && opts.skeinWeight > 0 && Number.isFinite(opts.skeinWeight))
     candidates.push({
       n: Math.ceil(opts.requiredGrams / opts.skeinWeight),
       basis: `${fmt(opts.requiredGrams)} g ÷ ${fmt(opts.skeinWeight)} g por ovillo`,
     });
-  if (opts.requiredMeters && opts.skeinLength)
+  if (opts.requiredMeters != null && opts.requiredMeters >= 0 && Number.isFinite(opts.requiredMeters) && opts.skeinLength && opts.skeinLength > 0 && Number.isFinite(opts.skeinLength))
     candidates.push({
       n: Math.ceil(opts.requiredMeters / opts.skeinLength),
       basis: `${fmt(opts.requiredMeters)} m ÷ ${fmt(opts.skeinLength)} m por ovillo`,
@@ -122,7 +134,7 @@ export function skeinsNeeded(opts: {
     const best = candidates.reduce((a, b) => (b.n > a.n ? b : a));
     return { needed: best.n, basis: best.basis };
   }
-  if (opts.manualEstimate != null && opts.manualEstimate >= 0)
+  if (opts.manualEstimate != null && opts.manualEstimate >= 0 && Number.isFinite(opts.manualEstimate))
     return { needed: opts.manualEstimate, basis: "estimación cargada manualmente" };
   return null;
 }
